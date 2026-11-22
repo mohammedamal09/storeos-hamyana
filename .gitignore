@@ -36,11 +36,7 @@ yarn-error.log*
 .vercel
 playwright-report
 test-results
-
-
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/supabase/.temp/
