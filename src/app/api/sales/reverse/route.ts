@@ -1,0 +1,2 @@
+import { z } from "zod";import { requireStaff,routeError } from "@/lib/server/auth";import { adminClient } from "@/lib/server/supabase";
+export async function POST(r:Request){try{const admin=await requireStaff("admin"),x=z.object({sale_id:z.string().uuid(),shift_id:z.string().uuid(),reason:z.string().trim().min(3).max(250)}).parse(await r.json());const{data,error}=await adminClient().rpc("reverse_sale_v1",{p_sale_id:x.sale_id,p_admin_id:admin.id,p_shift_id:x.shift_id,p_reason:x.reason});if(error)throw error;return Response.json({sale:data})}catch(e){return routeError(e)}}

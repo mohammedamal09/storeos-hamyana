@@ -1,26 +1,4 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@theme{--color-forest:#1b4332;--color-emerald:#2d6a4f;--color-cream:#f9f8f4;--color-gold:#fbbf24;--color-charcoal:#111827;--font-sans:var(--font-poppins);--font-arabic:var(--font-cairo)}
+*{box-sizing:border-box}html{background:#f9f8f4}body{margin:0;color:#111827;background:radial-gradient(circle at 85% 10%,rgba(45,106,79,.10),transparent 30rem),#f9f8f4;font-family:var(--font-poppins),sans-serif}html[dir="rtl"] body{font-family:var(--font-cairo),sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.55}:focus-visible{outline:3px solid rgba(251,191,36,.65);outline-offset:2px}.tabular{font-variant-numeric:tabular-nums}.surface{background:rgba(255,255,255,.72);border:1px solid rgba(27,67,50,.12);box-shadow:0 12px 30px rgba(27,67,50,.06);backdrop-filter:blur(16px)}
+@media print{.no-print{display:none!important}.receipt-print{width:80mm;margin:0;box-shadow:none;border:0}.app-main{padding:0!important}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}

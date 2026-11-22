@@ -1,0 +1,15 @@
+import { openDB, type DBSchema } from "idb"; import type { Category,Product,QueueOperation,Receipt,Shift } from "./types";
+interface StoreOSDB extends DBSchema { products:{key:string;value:Product}; categories:{key:string;value:Category}; shifts:{key:string;value:Shift}; receipts:{key:string;value:Receipt}; queue:{key:string;value:QueueOperation;indexes:{sequence:number}}; meta:{key:string;value:unknown} }
+const database=()=>openDB<StoreOSDB>("storeos-hamyana",1,{upgrade(db){db.createObjectStore("products",{keyPath:"id"});db.createObjectStore("categories",{keyPath:"id"});db.createObjectStore("shifts",{keyPath:"id"});db.createObjectStore("receipts",{keyPath:"id"});const q=db.createObjectStore("queue",{keyPath:"id"});q.createIndex("sequence","sequence");db.createObjectStore("meta")}});
+export async function cacheCatalog(products:Product[],categories:Category[]){const db=await database(),tx=db.transaction(["products","categories"],"readwrite");await Promise.all([tx.objectStore("products").clear(),tx.objectStore("categories").clear(),...products.map(p=>tx.objectStore("products").put(p)),...categories.map(c=>tx.objectStore("categories").put(c)),tx.done])}
+export async function getCachedCatalog(){const db=await database();return{products:await db.getAll("products"),categories:await db.getAll("categories")}}
+export async function cacheShift(shift:Shift|null){const db=await database();const tx=db.transaction(["shifts","meta"],"readwrite");if(shift){await tx.objectStore("shifts").put(shift);await tx.objectStore("meta").put(shift.id,"activeShiftId")}else{await tx.objectStore("meta").delete("activeShiftId")}await tx.done}
+export async function getCachedShift(){const db=await database(),id=await db.get("meta","activeShiftId");return typeof id==="string"?(await db.get("shifts",id))??null:null}
+export async function commitOfflineSale(receipt:Receipt,products:Product[],operation:QueueOperation){const db=await database(),tx=db.transaction(["receipts","products","queue"],"readwrite");await tx.objectStore("receipts").put(receipt);for(const p of products)await tx.objectStore("products").put(p);await tx.objectStore("queue").put(operation);await tx.done}
+export async function queueOperation(operation:QueueOperation){const db=await database();await db.put("queue",operation)}
+export async function listQueue(){const db=await database();return db.getAllFromIndex("queue","sequence")}
+export async function removeQueue(id:string){const db=await database();await db.delete("queue",id)}
+export async function failQueue(id:string,error:string){const db=await database(),op=await db.get("queue",id);if(op)await db.put("queue",{...op,status:"failed",error})}
+export async function markReceiptSynced(id:string){const db=await database(),r=await db.get("receipts",id);if(r)await db.put("receipts",{...r,pending:false})}
+export async function exportRecovery(){const db=await database();return JSON.stringify({exported_at:new Date().toISOString(),queue:await db.getAll("queue"),receipts:await db.getAll("receipts"),shift:await getCachedShift()},null,2)}
+

@@ -1,0 +1,2 @@
+import { describe,expect,it } from "vitest";import { addMoney,earningsShareMinor } from "./finance";
+describe("financial minor-unit rules",()=>{it("rounds one-third only after summing the full period",()=>{expect(earningsShareMinor(addMoney([100,100,100,1]))).toBe(100);expect(earningsShareMinor(2)).toBe(1);expect(earningsShareMinor(-2)).toBe(-1)});it("rejects floating-point money",()=>{expect(()=>addMoney([100,0.5])).toThrow(/integer minor units/)})});

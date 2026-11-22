@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StoreOS | Hamyana
 
-## Getting Started
+Production-oriented bilingual POS for one store and one sales terminal. It uses Next.js 16, Supabase, an IndexedDB offline queue, and additive PostgreSQL migrations.
 
-First, run the development server:
+## Local setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copy `.env.example` to `.env.local` and fill the Supabase publishable and server secret keys.
+2. Generate separate random values of at least 24 characters for `PIN_PEPPER` and `SETUP_KEY`.
+3. Apply `supabase/migrations/202611220001_storeos_initial.sql` to an empty project.
+4. Run `npm run dev`, open `/login`, and complete the one-time administrator setup.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Never reuse production values in preview or development. Variables beginning with `NEXT_PUBLIC_` are visible in the browser; `SUPABASE_SECRET_KEY`, `PIN_PEPPER`, and `SETUP_KEY` must remain server-only secrets.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Safe releases
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`. Stage a Vercel production deployment with `vercel --prod --skip-domain`, smoke-test its generated URL, then promote that exact build.
 
-## Learn More
+Database migrations are forward-only and additive. Never seed, reset, wipe, or run destructive down migrations against production. Take a Supabase backup before migrations and retain the prior Vercel deployment for application rollback.
 
-To learn more about Next.js, take a look at the following resources:
+## Offline recovery
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The active catalog, shift, receipts, and operation queue are stored in IndexedDB. Offline sales use stable operation IDs and replay in order. A locally closed shift remains pending until all earlier sales synchronize. Do not clear browser site data while the queue badge is nonzero. If synchronization needs intervention, keep the browser profile intact and export its recovery data before troubleshooting.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Browser storage cannot survive device loss or deliberate site-data deletion. Close and synchronize the shift before replacing or resetting the store PC.
 
-## Deploy on Vercel
+## Staging data
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+After applying the migration to an isolated staging project, run `ALLOW_STAGING_SEED=true node scripts/seed-staging.mjs` with staging environment variables loaded. The script refuses to run without the explicit staging flag. Demo PINs are Admin `0000` and Cashier `1234`; never run this seed against production.
